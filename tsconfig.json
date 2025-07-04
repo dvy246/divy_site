@@ -7,8 +7,12 @@
     "strict": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "types": ["vite/client"]         // ← allow import.meta.env
   },
-  "include": ["src"],
+  "include": [
+    "src",
+    "vite-env.d.ts"                  // ← reference your new file
+  ],
   "exclude": ["node_modules", "dist"]
 }
