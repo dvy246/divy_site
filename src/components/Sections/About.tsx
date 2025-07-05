@@ -1,13 +1,19 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { TrendingUp, Brain, Target, Award } from 'lucide-react';
-import { usePortfolioContent } from '../../hooks/usePortfolioContent';
-import EditableText from '../Admin/EditableText';
+import { useContentSections } from '../../hooks/useContent';
+import EditableContent from '../Admin/EditableContent';
 import EditableVideo from '../Admin/EditableVideo';
 
 const About: React.FC = () => {
-  const { content, updateContent } = usePortfolioContent();
-  const aboutContent = content.about;
+  const { content, saveContent } = useContentSections([
+    'about_title',
+    'about_subtitle',
+    'about_content',
+    'about_journey_title',
+    'about_video_title',
+    'about_video_url'
+  ]);
 
   const highlights = [
     {
@@ -32,10 +38,6 @@ const About: React.FC = () => {
     }
   ];
 
-  if (!aboutContent) {
-    return <div>Loading...</div>;
-  }
-
   return (
     <section id="about" className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -47,15 +49,15 @@ const About: React.FC = () => {
           className="text-center mb-16"
         >
           <h2 className="text-4xl md:text-5xl font-bold text-navy-900 mb-6">
-            <EditableText
-              value={aboutContent.title}
-              onSave={(value) => updateContent('about', 'title', value)}
+            <EditableContent
+              name="about_title"
+              defaultContent="Where Business Meets Innovation"
             />
           </h2>
           <p className="text-xl text-navy-600 max-w-3xl mx-auto">
-            <EditableText
-              value={aboutContent.subtitle}
-              onSave={(value) => updateContent('about', 'subtitle', value)}
+            <EditableContent
+              name="about_subtitle"
+              defaultContent="The intersection of business intelligence and machine learning is where I thrive."
               multiline
             />
           </p>
@@ -71,16 +73,16 @@ const About: React.FC = () => {
             className="space-y-6"
           >
             <h3 className="text-3xl font-bold text-navy-900 mb-6">
-              <EditableText
-                value={aboutContent.journey_title || 'My Journey'}
-                onSave={(value) => updateContent('about', 'journey_title', value)}
+              <EditableContent
+                name="about_journey_title"
+                defaultContent="My Journey"
               />
             </h3>
             
             <div className="prose prose-lg text-navy-700 space-y-4">
-              <EditableText
-                value={aboutContent.content}
-                onSave={(value) => updateContent('about', 'content', value)}
+              <EditableContent
+                name="about_content"
+                defaultContent="My journey began in the world of commerce, where I developed a deep appreciation for analytical rigor and strategic thinking. The BCom (Hons) foundation taught me to see patterns in data, understand market dynamics, and most importantly—translate complex insights into actionable business decisions."
                 multiline
                 className="leading-relaxed"
               />
@@ -96,15 +98,15 @@ const About: React.FC = () => {
             >
               <div className="bg-gradient-to-br from-navy-50 to-gold-50 p-6 rounded-2xl">
                 <h4 className="text-xl font-semibold text-navy-900 mb-4">
-                  <EditableText
-                    value={aboutContent.video_title || 'Personal Introduction'}
-                    onSave={(value) => updateContent('about', 'video_title', value)}
+                  <EditableContent
+                    name="about_video_title"
+                    defaultContent="Personal Introduction"
                   />
                 </h4>
                 <div className="aspect-video">
                   <EditableVideo
-                    src={aboutContent.video_url}
-                    onSave={(videoUrl) => updateContent('about', 'video_url', videoUrl)}
+                    src={content.about_video_url}
+                    onSave={(videoUrl) => saveContent('about_video_url', videoUrl)}
                     className="w-full h-full rounded-xl"
                     placeholder="Upload your introduction video"
                   />
@@ -134,15 +136,15 @@ const About: React.FC = () => {
                   <highlight.icon className="w-6 h-6 text-gold-600" />
                 </div>
                 <h4 className="text-lg font-semibold text-navy-900 mb-2">
-                  <EditableText
-                    value={aboutContent[`highlight_${index + 1}_title`] || highlight.title}
-                    onSave={(value) => updateContent('about', `highlight_${index + 1}_title`, value)}
+                  <EditableContent
+                    name={`about_highlight_${index + 1}_title`}
+                    defaultContent={highlight.title}
                   />
                 </h4>
                 <p className="text-navy-600 text-sm leading-relaxed">
-                  <EditableText
-                    value={aboutContent[`highlight_${index + 1}_desc`] || highlight.description}
-                    onSave={(value) => updateContent('about', `highlight_${index + 1}_desc`, value)}
+                  <EditableContent
+                    name={`about_highlight_${index + 1}_desc`}
+                    defaultContent={highlight.description}
                     multiline
                   />
                 </p>

@@ -1,13 +1,20 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { ArrowDown } from 'lucide-react';
-import { usePortfolioContent } from '../../hooks/usePortfolioContent';
-import EditableText from '../Admin/EditableText';
+import { useContentSections } from '../../hooks/useContent';
+import EditableContent from '../Admin/EditableContent';
 import EditableImage from '../Admin/EditableImage';
 
 const Hero: React.FC = () => {
-  const { content, updateContent } = usePortfolioContent();
-  const heroContent = content.hero;
+  const { content, saveContent } = useContentSections([
+    'hero_title',
+    'hero_subtitle', 
+    'hero_badge',
+    'hero_cta_text',
+    'hero_floating_badge',
+    'hero_scroll_text',
+    'hero_image_url'
+  ]);
 
   const scrollToAbout = () => {
     const element = document.querySelector('#about');
@@ -15,10 +22,6 @@ const Hero: React.FC = () => {
       element.scrollIntoView({ behavior: 'smooth' });
     }
   };
-
-  if (!heroContent) {
-    return <div>Loading...</div>;
-  }
 
   return (
     <section className="min-h-screen flex items-center justify-center relative overflow-hidden bg-gradient-to-br from-navy-50 via-platinum-50 to-gold-50">
@@ -44,9 +47,9 @@ const Hero: React.FC = () => {
               transition={{ delay: 0.2, duration: 0.6 }}
               className="inline-flex items-center space-x-2 bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full border border-gold-200 shadow-lg"
             >
-              <EditableText
-                value={heroContent.badge || 'AI Professional & Business Strategist'}
-                onSave={(value) => updateContent('hero', 'badge', value)}
+              <EditableContent
+                name="hero_badge"
+                defaultContent="Finance + AI Professional"
                 className="text-sm font-medium text-navy-700"
               />
             </motion.div>
@@ -58,9 +61,9 @@ const Hero: React.FC = () => {
               transition={{ delay: 0.4, duration: 0.8 }}
               className="text-4xl md:text-6xl font-bold text-navy-900 leading-tight"
             >
-              <EditableText
-                value={heroContent.title}
-                onSave={(value) => updateContent('hero', 'title', value)}
+              <EditableContent
+                name="hero_title"
+                defaultContent="Hey, Divy here! 👋 Finance Meets Tech"
                 className="block text-transparent bg-clip-text bg-gradient-to-r from-gold-600 to-gold-500"
                 multiline
               />
@@ -73,9 +76,9 @@ const Hero: React.FC = () => {
               transition={{ delay: 0.6, duration: 0.8 }}
               className="text-xl md:text-2xl text-navy-600 leading-relaxed"
             >
-              <EditableText
-                value={heroContent.subtitle}
-                onSave={(value) => updateContent('hero', 'subtitle', value)}
+              <EditableContent
+                name="hero_subtitle"
+                defaultContent="BCom graduate with a passion for AI. I bridge business strategy with cutting-edge technology to solve real-world problems."
                 multiline
               />
             </motion.p>
@@ -96,9 +99,9 @@ const Hero: React.FC = () => {
                 }}
                 className="group relative inline-flex items-center space-x-3 bg-gradient-to-r from-gold-600 to-gold-500 text-white px-8 py-4 rounded-full font-semibold text-lg shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300"
               >
-                <EditableText
-                  value={heroContent.cta_text || "Let's Solve Problems With Me"}
-                  onSave={(value) => updateContent('hero', 'cta_text', value)}
+                <EditableContent
+                  name="hero_cta_text"
+                  defaultContent="Let's Solve Problems Together"
                   className="text-white"
                 />
                 <motion.div
@@ -122,22 +125,22 @@ const Hero: React.FC = () => {
               {/* Main Photo Circle */}
               <div className="w-80 h-80 md:w-96 md:h-96 rounded-full overflow-hidden shadow-2xl border-8 border-white/50 backdrop-blur-sm">
                 <EditableImage
-                  src={heroContent.image_url || 'https://images.pexels.com/photos/3785077/pexels-photo-3785077.jpeg?auto=compress&cs=tinysrgb&w=800'}
+                  src={content.hero_image_url || 'https://images.pexels.com/photos/3785077/pexels-photo-3785077.jpeg?auto=compress&cs=tinysrgb&w=800'}
                   alt="Profile Photo"
-                  onSave={(imageUrl) => updateContent('hero', 'image_url', imageUrl)}
+                  onSave={(imageUrl) => saveContent('hero_image_url', imageUrl)}
                   className="w-full h-full object-cover"
                 />
               </div>
               
-              {/* Floating Badge - Only the bottom one, removed the star */}
+              {/* Floating Badge */}
               <motion.div
                 animate={{ y: [0, 10, 0] }}
                 transition={{ repeat: Infinity, duration: 4, delay: 1 }}
                 className="absolute -bottom-4 -left-4 bg-navy-600 text-white p-3 rounded-full shadow-lg"
               >
-                <EditableText
-                  value={heroContent.floating_badge || 'AI'}
-                  onSave={(value) => updateContent('hero', 'floating_badge', value)}
+                <EditableContent
+                  name="hero_floating_badge"
+                  defaultContent="AI"
                   className="text-sm font-bold text-white"
                 />
               </motion.div>
@@ -156,9 +159,9 @@ const Hero: React.FC = () => {
             onClick={scrollToAbout}
             className="flex flex-col items-center space-y-2 text-navy-600 hover:text-gold-600 transition-colors group"
           >
-            <EditableText
-              value={heroContent.scroll_text || 'Discover More'}
-              onSave={(value) => updateContent('hero', 'scroll_text', value)}
+            <EditableContent
+              name="hero_scroll_text"
+              defaultContent="Discover More"
               className="text-sm font-medium"
             />
             <motion.div

@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Mail, Phone, MapPin, Send, Linkedin, Github, Twitter } from 'lucide-react';
 import { useForm } from 'react-hook-form';
-import { usePortfolioContent } from '../../hooks/usePortfolioContent';
-import EditableText from '../Admin/EditableText';
+import { useContentSections } from '../../hooks/useContent';
+import EditableContent from '../Admin/EditableContent';
 import toast from 'react-hot-toast';
 
 interface ContactForm {
@@ -16,8 +16,26 @@ interface ContactForm {
 const Contact: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { register, handleSubmit, reset, formState: { errors } } = useForm<ContactForm>();
-  const { content, updateContent } = usePortfolioContent();
-  const contactContent = content.contact;
+  const { content, saveContent } = useContentSections([
+    'contact_title',
+    'contact_subtitle',
+    'contact_content',
+    'contact_section_title',
+    'contact_email',
+    'contact_phone',
+    'contact_location',
+    'contact_social_title',
+    'contact_linkedin_url',
+    'contact_github_url',
+    'contact_twitter_url',
+    'contact_form_title',
+    'contact_name_label',
+    'contact_email_label',
+    'contact_company_label',
+    'contact_message_label',
+    'contact_button_text',
+    'contact_footer_text'
+  ]);
 
   const onSubmit = async (data: ContactForm) => {
     setIsSubmitting(true);
@@ -33,10 +51,6 @@ const Contact: React.FC = () => {
     }
   };
 
-  if (!contactContent) {
-    return <div>Loading...</div>;
-  }
-
   return (
     <section id="contact" className="py-20 bg-gradient-to-br from-navy-50 to-platinum-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -48,15 +62,15 @@ const Contact: React.FC = () => {
           className="text-center mb-16"
         >
           <h2 className="text-4xl md:text-5xl font-bold text-navy-900 mb-6">
-            <EditableText
-              value={contactContent.title}
-              onSave={(value) => updateContent('contact', 'title', value)}
+            <EditableContent
+              name="contact_title"
+              defaultContent="Let's Build the Future Together"
             />
           </h2>
           <p className="text-xl text-navy-600 max-w-3xl mx-auto">
-            <EditableText
-              value={contactContent.subtitle}
-              onSave={(value) => updateContent('contact', 'subtitle', value)}
+            <EditableContent
+              name="contact_subtitle"
+              defaultContent="Ready to transform your business with AI? Let's discuss how we can create solutions that drive real impact."
               multiline
             />
           </p>
@@ -73,20 +87,20 @@ const Contact: React.FC = () => {
           >
             <div>
               <h3 className="text-2xl font-bold text-navy-900 mb-6">
-                <EditableText
-                  value={contactContent.section_title || 'Get in Touch'}
-                  onSave={(value) => updateContent('contact', 'section_title', value)}
+                <EditableContent
+                  name="contact_section_title"
+                  defaultContent="Get in Touch"
                 />
               </h3>
-              <EditableText
-                value={contactContent.content}
-                onSave={(value) => updateContent('contact', 'content', value)}
+              <EditableContent
+                name="contact_content"
+                defaultContent="Whether you're looking to implement AI solutions, need strategic guidance on digital transformation, or want to explore collaboration opportunities, I'm here to help turn your vision into reality."
                 multiline
                 className="text-navy-600 leading-relaxed mb-8"
               />
             </div>
 
-            {/* Contact Details - NOW FULLY EDITABLE */}
+            {/* Contact Details */}
             <div className="space-y-4">
               <motion.div
                 whileHover={{ x: 5 }}
@@ -97,9 +111,9 @@ const Contact: React.FC = () => {
                 </div>
                 <div className="flex-1">
                   <p className="text-sm text-navy-500 font-medium">Email</p>
-                  <EditableText
-                    value={contactContent.email || 'your.email@example.com'}
-                    onSave={(value) => updateContent('contact', 'email', value)}
+                  <EditableContent
+                    name="contact_email"
+                    defaultContent="your.email@example.com"
                     className="text-navy-900 font-semibold"
                   />
                 </div>
@@ -114,9 +128,9 @@ const Contact: React.FC = () => {
                 </div>
                 <div className="flex-1">
                   <p className="text-sm text-navy-500 font-medium">Phone</p>
-                  <EditableText
-                    value={contactContent.phone || '+1 (555) 123-4567'}
-                    onSave={(value) => updateContent('contact', 'phone', value)}
+                  <EditableContent
+                    name="contact_phone"
+                    defaultContent="+1 (555) 123-4567"
                     className="text-navy-900 font-semibold"
                   />
                 </div>
@@ -131,9 +145,9 @@ const Contact: React.FC = () => {
                 </div>
                 <div className="flex-1">
                   <p className="text-sm text-navy-500 font-medium">Location</p>
-                  <EditableText
-                    value={contactContent.location || 'Your City, Country'}
-                    onSave={(value) => updateContent('contact', 'location', value)}
+                  <EditableContent
+                    name="contact_location"
+                    defaultContent="Your City, Country"
                     className="text-navy-900 font-semibold"
                   />
                 </div>
@@ -143,14 +157,14 @@ const Contact: React.FC = () => {
             {/* Social Links */}
             <div>
               <h4 className="text-lg font-semibold text-navy-900 mb-4">
-                <EditableText
-                  value={contactContent.social_title || 'Connect With Me'}
-                  onSave={(value) => updateContent('contact', 'social_title', value)}
+                <EditableContent
+                  name="contact_social_title"
+                  defaultContent="Connect With Me"
                 />
               </h4>
               <div className="flex space-x-4">
                 <motion.a
-                  href={contactContent.linkedin_url || 'https://linkedin.com/in/yourprofile'}
+                  href={content.contact_linkedin_url || 'https://linkedin.com/in/yourprofile'}
                   target="_blank"
                   rel="noopener noreferrer"
                   whileHover={{ scale: 1.1 }}
@@ -160,7 +174,7 @@ const Contact: React.FC = () => {
                   <Linkedin className="w-5 h-5" />
                 </motion.a>
                 <motion.a
-                  href={contactContent.github_url || 'https://github.com/yourprofile'}
+                  href={content.contact_github_url || 'https://github.com/yourprofile'}
                   target="_blank"
                   rel="noopener noreferrer"
                   whileHover={{ scale: 1.1 }}
@@ -170,7 +184,7 @@ const Contact: React.FC = () => {
                   <Github className="w-5 h-5" />
                 </motion.a>
                 <motion.a
-                  href={contactContent.twitter_url || 'https://twitter.com/yourprofile'}
+                  href={content.contact_twitter_url || 'https://twitter.com/yourprofile'}
                   target="_blank"
                   rel="noopener noreferrer"
                   whileHover={{ scale: 1.1 }}
@@ -185,25 +199,25 @@ const Contact: React.FC = () => {
               <div className="mt-4 space-y-2 text-sm">
                 <div className="flex items-center">
                   <span className="text-navy-500 w-20">LinkedIn:</span>
-                  <EditableText
-                    value={contactContent.linkedin_url || 'https://linkedin.com/in/yourprofile'}
-                    onSave={(value) => updateContent('contact', 'linkedin_url', value)}
+                  <EditableContent
+                    name="contact_linkedin_url"
+                    defaultContent="https://linkedin.com/in/yourprofile"
                     className="text-navy-700 flex-1"
                   />
                 </div>
                 <div className="flex items-center">
                   <span className="text-navy-500 w-20">GitHub:</span>
-                  <EditableText
-                    value={contactContent.github_url || 'https://github.com/yourprofile'}
-                    onSave={(value) => updateContent('contact', 'github_url', value)}
+                  <EditableContent
+                    name="contact_github_url"
+                    defaultContent="https://github.com/yourprofile"
                     className="text-navy-700 flex-1"
                   />
                 </div>
                 <div className="flex items-center">
                   <span className="text-navy-500 w-20">Twitter:</span>
-                  <EditableText
-                    value={contactContent.twitter_url || 'https://twitter.com/yourprofile'}
-                    onSave={(value) => updateContent('contact', 'twitter_url', value)}
+                  <EditableContent
+                    name="contact_twitter_url"
+                    defaultContent="https://twitter.com/yourprofile"
                     className="text-navy-700 flex-1"
                   />
                 </div>
@@ -220,9 +234,9 @@ const Contact: React.FC = () => {
             className="bg-white rounded-2xl shadow-xl p-8"
           >
             <h3 className="text-2xl font-bold text-navy-900 mb-6">
-              <EditableText
-                value={contactContent.form_title || 'Start a Conversation'}
-                onSave={(value) => updateContent('contact', 'form_title', value)}
+              <EditableContent
+                name="contact_form_title"
+                defaultContent="Start a Conversation"
               />
             </h3>
             
@@ -230,9 +244,9 @@ const Contact: React.FC = () => {
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-navy-700 mb-2">
-                    <EditableText
-                      value={contactContent.name_label || 'Full Name *'}
-                      onSave={(value) => updateContent('contact', 'name_label', value)}
+                    <EditableContent
+                      name="contact_name_label"
+                      defaultContent="Full Name *"
                     />
                   </label>
                   <input
@@ -248,9 +262,9 @@ const Contact: React.FC = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-navy-700 mb-2">
-                    <EditableText
-                      value={contactContent.email_label || 'Email Address *'}
-                      onSave={(value) => updateContent('contact', 'email_label', value)}
+                    <EditableContent
+                      name="contact_email_label"
+                      defaultContent="Email Address *"
                     />
                   </label>
                   <input
@@ -273,9 +287,9 @@ const Contact: React.FC = () => {
 
               <div>
                 <label className="block text-sm font-medium text-navy-700 mb-2">
-                  <EditableText
-                    value={contactContent.company_label || 'Company/Organization'}
-                    onSave={(value) => updateContent('contact', 'company_label', value)}
+                  <EditableContent
+                    name="contact_company_label"
+                    defaultContent="Company/Organization"
                   />
                 </label>
                 <input
@@ -288,9 +302,9 @@ const Contact: React.FC = () => {
 
               <div>
                 <label className="block text-sm font-medium text-navy-700 mb-2">
-                  <EditableText
-                    value={contactContent.message_label || 'Project Details *'}
-                    onSave={(value) => updateContent('contact', 'message_label', value)}
+                  <EditableContent
+                    name="contact_message_label"
+                    defaultContent="Project Details *"
                   />
                 </label>
                 <textarea
@@ -316,9 +330,9 @@ const Contact: React.FC = () => {
                 ) : (
                   <>
                     <Send className="w-5 h-5" />
-                    <EditableText
-                      value={contactContent.button_text || 'Send Message'}
-                      onSave={(value) => updateContent('contact', 'button_text', value)}
+                    <EditableContent
+                      name="contact_button_text"
+                      defaultContent="Send Message"
                       className="text-white"
                     />
                   </>
@@ -327,9 +341,9 @@ const Contact: React.FC = () => {
             </form>
 
             <div className="mt-6 text-center text-sm text-navy-500">
-              <EditableText
-                value={contactContent.footer_text || 'I typically respond within 24 hours. For urgent matters, feel free to call directly.'}
-                onSave={(value) => updateContent('contact', 'footer_text', value)}
+              <EditableContent
+                name="contact_footer_text"
+                defaultContent="I typically respond within 24 hours. For urgent matters, feel free to call directly."
                 multiline
               />
             </div>
