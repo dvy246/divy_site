@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './contexts/AuthContext';
+import { testSupabaseConnection } from './lib/supabase';
 import Header from './components/Layout/Header';
 import Hero from './components/Sections/Hero';
 import About from './components/Sections/About';
@@ -12,6 +13,17 @@ import Contact from './components/Sections/Contact';
 import Footer from './components/Layout/Footer';
 
 function App() {
+  useEffect(() => {
+    // Test Supabase connection on app load
+    testSupabaseConnection().then(connected => {
+      if (connected) {
+        console.log('✅ Supabase connection verified');
+      } else {
+        console.error('❌ Supabase connection failed');
+      }
+    });
+  }, []);
+
   return (
     <Router>
       <AuthProvider>

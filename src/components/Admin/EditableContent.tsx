@@ -33,8 +33,13 @@ const EditableContent: React.FC<EditableContentProps> = ({
   };
 
   const handleSave = async () => {
-    await saveContent(editValue);
-    setIsEditing(false);
+    try {
+      await saveContent(editValue);
+      setIsEditing(false);
+    } catch (err) {
+      console.error('Failed to save content:', err);
+      // Keep editing mode open on error
+    }
   };
 
   const handleCancel = () => {

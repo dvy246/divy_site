@@ -31,7 +31,8 @@ export const useContent = (name: string) => {
           // No rows found, set default content
           setContent('');
         } else {
-          throw fetchError;
+          console.error('Supabase fetch error:', fetchError);
+          setContent(''); // Fallback to empty content
         }
       } else {
         setContent(data.content || '');
@@ -52,23 +53,29 @@ export const useContent = (name: string) => {
       // Optimistically update local state
       setContent(newContent);
 
-      const { error: upsertError } = await supabase
+      // Use upsert to insert or update
+      const { data, error: upsertError } = await supabase
         .from('sections')
         .upsert({
           name,
           content: newContent,
           updated_at: new Date().toISOString()
-        });
+        }, {
+          onConflict: 'name'
+        })
+        .select();
 
       if (upsertError) {
+        console.error('Supabase upsert error:', upsertError);
         throw upsertError;
       }
 
+      console.log('Content saved successfully:', data);
       toast.success('Content saved successfully!');
     } catch (err: any) {
       console.error('Error saving content:', err);
       setError(err.message);
-      toast.error('Failed to save content. Please try again.');
+      toast.error(`Failed to save content: ${err.message}`);
       
       // Revert optimistic update on error
       await fetchContent();
@@ -104,16 +111,21 @@ export const useContentSections = (sectionNames: string[]) => {
         .in('name', sectionNames);
 
       if (fetchError) {
-        throw fetchError;
+        console.error('Supabase fetch error:', fetchError);
+        // Set empty content as fallback
+        const fallbackContent: ContentData = {};
+        sectionNames.forEach(name => {
+          fallbackContent[name] = '';
+        });
+        setContent(fallbackContent);
+      } else {
+        const contentMap: ContentData = {};
+        sectionNames.forEach(name => {
+          const found = data?.find(item => item.name === name);
+          contentMap[name] = found?.content || '';
+        });
+        setContent(contentMap);
       }
-
-      const contentMap: ContentData = {};
-      sectionNames.forEach(name => {
-        const found = data?.find(item => item.name === name);
-        contentMap[name] = found?.content || '';
-      });
-
-      setContent(contentMap);
     } catch (err: any) {
       console.error('Error fetching content sections:', err);
       setError(err.message);
@@ -139,23 +151,29 @@ export const useContentSections = (sectionNames: string[]) => {
         [name]: newContent
       }));
 
-      const { error: upsertError } = await supabase
+      // Use upsert to insert or update
+      const { data, error: upsertError } = await supabase
         .from('sections')
         .upsert({
           name,
           content: newContent,
           updated_at: new Date().toISOString()
-        });
+        }, {
+          onConflict: 'name'
+        })
+        .select();
 
       if (upsertError) {
+        console.error('Supabase upsert error:', upsertError);
         throw upsertError;
       }
 
+      console.log('Content saved successfully:', data);
       toast.success('Content saved successfully!');
     } catch (err: any) {
       console.error('Error saving content:', err);
       setError(err.message);
-      toast.error('Failed to save content. Please try again.');
+      toast.error(`Failed to save content: ${err.message}`);
       
       // Revert optimistic update on error
       await fetchAllContent();
