@@ -53,13 +53,12 @@ export const useContent = (name: string) => {
       // Optimistically update local state
       setContent(newContent);
 
-      // Use upsert to insert or update
+      // Use upsert to insert or update - let the database handle updated_at automatically
       const { data, error: upsertError } = await supabase
         .from('sections')
         .upsert({
           name,
-          content: newContent,
-          updated_at: new Date().toISOString()
+          content: newContent
         }, {
           onConflict: 'name'
         })
@@ -151,13 +150,12 @@ export const useContentSections = (sectionNames: string[]) => {
         [name]: newContent
       }));
 
-      // Use upsert to insert or update
+      // Use upsert to insert or update - let the database handle updated_at automatically
       const { data, error: upsertError } = await supabase
         .from('sections')
         .upsert({
           name,
-          content: newContent,
-          updated_at: new Date().toISOString()
+          content: newContent
         }, {
           onConflict: 'name'
         })
