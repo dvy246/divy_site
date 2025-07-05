@@ -23,7 +23,8 @@ export const useContent = (name) => {
                     setContent('');
                 }
                 else {
-                    throw fetchError;
+                    console.error('Supabase fetch error:', fetchError);
+                    setContent(''); // Fallback to empty content
                 }
             }
             else {
@@ -44,22 +45,28 @@ export const useContent = (name) => {
             setError(null);
             // Optimistically update local state
             setContent(newContent);
-            const { error: upsertError } = await supabase
+            // Use upsert to insert or update
+            const { data, error: upsertError } = await supabase
                 .from('sections')
                 .upsert({
                 name,
                 content: newContent,
                 updated_at: new Date().toISOString()
-            });
+            }, {
+                onConflict: 'name'
+            })
+                .select();
             if (upsertError) {
+                console.error('Supabase upsert error:', upsertError);
                 throw upsertError;
             }
+            console.log('Content saved successfully:', data);
             toast.success('Content saved successfully!');
         }
         catch (err) {
             console.error('Error saving content:', err);
             setError(err.message);
-            toast.error('Failed to save content. Please try again.');
+            toast.error(`Failed to save content: ${err.message}`);
             // Revert optimistic update on error
             await fetchContent();
         }
@@ -88,14 +95,22 @@ export const useContentSections = (sectionNames) => {
                 .select('name, content')
                 .in('name', sectionNames);
             if (fetchError) {
-                throw fetchError;
+                console.error('Supabase fetch error:', fetchError);
+                // Set empty content as fallback
+                const fallbackContent = {};
+                sectionNames.forEach(name => {
+                    fallbackContent[name] = '';
+                });
+                setContent(fallbackContent);
             }
-            const contentMap = {};
-            sectionNames.forEach(name => {
-                const found = data?.find(item => item.name === name);
-                contentMap[name] = found?.content || '';
-            });
-            setContent(contentMap);
+            else {
+                const contentMap = {};
+                sectionNames.forEach(name => {
+                    const found = data?.find(item => item.name === name);
+                    contentMap[name] = found?.content || '';
+                });
+                setContent(contentMap);
+            }
         }
         catch (err) {
             console.error('Error fetching content sections:', err);
@@ -119,22 +134,28 @@ export const useContentSections = (sectionNames) => {
                 ...prev,
                 [name]: newContent
             }));
-            const { error: upsertError } = await supabase
+            // Use upsert to insert or update
+            const { data, error: upsertError } = await supabase
                 .from('sections')
                 .upsert({
                 name,
                 content: newContent,
                 updated_at: new Date().toISOString()
-            });
+            }, {
+                onConflict: 'name'
+            })
+                .select();
             if (upsertError) {
+                console.error('Supabase upsert error:', upsertError);
                 throw upsertError;
             }
+            console.log('Content saved successfully:', data);
             toast.success('Content saved successfully!');
         }
         catch (err) {
             console.error('Error saving content:', err);
             setError(err.message);
-            toast.error('Failed to save content. Please try again.');
+            toast.error(`Failed to save content: ${err.message}`);
             // Revert optimistic update on error
             await fetchAllContent();
         }
