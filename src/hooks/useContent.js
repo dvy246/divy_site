@@ -45,14 +45,12 @@ export const useContent = (name) => {
             setError(null);
             // Optimistically update local state
             setContent(newContent);
-            // Use upsert to insert or update - let the database handle updated_at automatically
+            // Simple upsert without manually setting updated_at - let the trigger handle it
             const { data, error: upsertError } = await supabase
                 .from('sections')
                 .upsert({
                 name,
                 content: newContent
-            }, {
-                onConflict: 'name'
             })
                 .select();
             if (upsertError) {
@@ -133,14 +131,12 @@ export const useContentSections = (sectionNames) => {
                 ...prev,
                 [name]: newContent
             }));
-            // Use upsert to insert or update - let the database handle updated_at automatically
+            // Simple upsert without manually setting updated_at - let the trigger handle it
             const { data, error: upsertError } = await supabase
                 .from('sections')
                 .upsert({
                 name,
                 content: newContent
-            }, {
-                onConflict: 'name'
             })
                 .select();
             if (upsertError) {
