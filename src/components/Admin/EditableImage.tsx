@@ -1,7 +1,8 @@
 import React, { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Camera, Upload, X, Link, Image } from 'lucide-react';
+import { Camera, Upload, X, Link, Image, Loader } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
+import { useImageUpload } from '../../hooks/useImageUpload';
 import toast from 'react-hot-toast';
 
 interface EditableImageProps {
@@ -19,58 +20,22 @@ const EditableImage: React.FC<EditableImageProps> = ({
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [imageUrl, setImageUrl] = useState(src);
-  const [isUploading, setIsUploading] = useState(false);
   const [uploadMethod, setUploadMethod] = useState<'file' | 'url'>('file');
   const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { isAdmin } = useAuth();
+  const { uploadImage, isUploading, uploadProgress } = useImageUpload();
 
   if (!isAdmin) {
     return <img src={src} alt={alt} className={className} />;
   }
 
-  const validateFile = (file: File): boolean => {
-    // Check file type
-    if (!file.type.startsWith('image/')) {
-      toast.error('Please select an image file (JPG, PNG, GIF, WebP)');
-      return false;
-    }
-
-    // Check file size (max 10MB)
-    if (file.size > 10 * 1024 * 1024) {
-      toast.error('Image size should be less than 10MB');
-      return false;
-    }
-
-    return true;
-  };
-
   const processFile = async (file: File) => {
-    if (!validateFile(file)) return;
-
-    setIsUploading(true);
-    
-    try {
-      // Create a promise to handle the FileReader
-      const base64String = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const result = e.target?.result as string;
-          resolve(result);
-        };
-        reader.onerror = () => reject(new Error('Failed to read file'));
-        reader.readAsDataURL(file);
-      });
-
-      setImageUrl(base64String);
-      onSave(base64String);
+    const result = await uploadImage(file, 'profile');
+    if (result) {
+      setImageUrl(result.url);
+      onSave(result.url);
       setIsEditing(false);
-      toast.success('✅ Image uploaded successfully!');
-    } catch (error) {
-      console.error('Upload error:', error);
-      toast.error('❌ Failed to upload image. Please try again.');
-    } finally {
-      setIsUploading(false);
     }
   };
 
@@ -116,7 +81,7 @@ const EditableImage: React.FC<EditableImageProps> = ({
 
     onSave(imageUrl);
     setIsEditing(false);
-    toast.success('✅ Image updated successfully!');
+    toast.success('Image updated successfully!');
   };
 
   const handleCancel = () => {
@@ -174,37 +139,46 @@ const EditableImage: React.FC<EditableImageProps> = ({
                   accept="image/*"
                   onChange={handleFileUpload}
                   className="hidden"
+                  disabled={isUploading}
                 />
                 <div 
                   className={`border-2 border-dashed rounded-xl p-8 transition-all duration-200 cursor-pointer ${
                     dragActive 
                       ? 'border-gold-500 bg-gold-50' 
                       : 'border-navy-300 hover:border-gold-400 hover:bg-gold-25'
-                  }`}
+                  } ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}
                   onDragEnter={handleDrag}
                   onDragLeave={handleDrag}
                   onDragOver={handleDrag}
                   onDrop={handleDrop}
-                  onClick={() => fileInputRef.current?.click()}
+                  onClick={() => !isUploading && fileInputRef.current?.click()}
                 >
-                  <Upload className={`w-12 h-12 mx-auto mb-4 ${dragActive ? 'text-gold-600' : 'text-navy-400'}`} />
-                  <p className="text-navy-700 font-medium mb-2">
-                    {dragActive ? 'Drop your image here!' : 'Click to upload or drag and drop'}
-                  </p>
-                  <p className="text-sm text-navy-500 mb-4">JPG, PNG, GIF, WebP up to 10MB</p>
-                  <button
-                    disabled={isUploading}
-                    className="bg-gold-500 text-white px-6 py-3 rounded-lg hover:bg-gold-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
-                  >
-                    {isUploading ? (
-                      <div className="flex items-center space-x-2">
-                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                        <span>Uploading...</span>
+                  {isUploading ? (
+                    <div className="flex flex-col items-center">
+                      <Loader className="w-12 h-12 mx-auto mb-4 text-gold-600 animate-spin" />
+                      <p className="text-navy-700 font-medium mb-2">Uploading...</p>
+                      <div className="w-full bg-navy-200 rounded-full h-2 mb-4">
+                        <div 
+                          className="bg-gold-500 h-2 rounded-full transition-all duration-300"
+                          style={{ width: `${uploadProgress}%` }}
+                        />
                       </div>
-                    ) : (
-                      'Choose Your Photo'
-                    )}
-                  </button>
+                    </div>
+                  ) : (
+                    <>
+                      <Upload className={`w-12 h-12 mx-auto mb-4 ${dragActive ? 'text-gold-600' : 'text-navy-400'}`} />
+                      <p className="text-navy-700 font-medium mb-2">
+                        {dragActive ? 'Drop your image here!' : 'Click to upload or drag and drop'}
+                      </p>
+                      <p className="text-sm text-navy-500 mb-4">JPG, PNG, GIF, WebP up to 10MB</p>
+                      <button
+                        disabled={isUploading}
+                        className="bg-gold-500 text-white px-6 py-3 rounded-lg hover:bg-gold-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                      >
+                        Choose Your Photo
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
             ) : (
